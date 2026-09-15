@@ -25,6 +25,41 @@ namespace Luxe_glow_studio.Models
         public string? ClientEmail { get; set; }
 
         public string? AssignedStaffMember { get; set; }
+
+        public bool IsHomeService { get; set; } = false;
+
+        public string? HomeServiceAddress { get; set; }
+
+        public int? OfferCodeId { get; set; }
+    }
+
+    public class CreateMultiServiceBookingDto
+    {
+        [Required]
+        public int UserId { get; set; }
+
+        [Required]
+        public List<int> ServiceIds { get; set; } = new();
+
+        [Required]
+        public DateTime AppointmentDate { get; set; }
+
+        [Required]
+        public TimeSpan StartTime { get; set; }
+
+        public string? Notes { get; set; }
+
+        public string? SpecialRequests { get; set; }
+
+        public string? ClientPhone { get; set; }
+
+        public string? ClientEmail { get; set; }
+
+        public string? AssignedStaffMember { get; set; }
+
+        public bool IsHomeService { get; set; } = false;
+
+        public string? HomeServiceAddress { get; set; }
     }
 
     public class BookingAvailabilityDto

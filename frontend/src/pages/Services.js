@@ -1,118 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../config/api';
+import React, { useState } from 'react';
+import { servicesData, categories } from '../data/store';
+import BookingModal from '../components/BookingModal';
 import './Services.css';
 
 const Services = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState(null);
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
+  const filteredServices = servicesData.filter(service => {
+    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
+    const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  const fetchServices = async () => {
-    try {
-      // This endpoint needs to be created in the backend
-      const response = await api.get('/services');
-      setServices(response.data);
-    } catch (err) {
-      setError('Failed to load services. Showing sample data.');
-      // Sample data for now
-      setServices([
-        {
-          id: 1,
-          name: 'Classic Facial',
-          description: 'Deep cleansing facial treatment for glowing skin',
-          price: 80,
-          durationMinutes: 60,
-          isPopular: true,
-        },
-        {
-          id: 2,
-          name: 'Hair Styling',
-          description: 'Professional hair cut and styling',
-          price: 60,
-          durationMinutes: 45,
-          isPopular: true,
-        },
-        {
-          id: 3,
-          name: 'Bridal Makeup',
-          description: 'Complete bridal makeup package',
-          price: 150,
-          durationMinutes: 120,
-          isPopular: true,
-        },
-        {
-          id: 4,
-          name: 'Manicure & Pedicure',
-          description: 'Complete nail care and polish',
-          price: 50,
-          durationMinutes: 60,
-        },
-        {
-          id: 5,
-          name: 'Spa Package',
-          description: 'Relaxing full body spa treatment',
-          price: 200,
-          durationMinutes: 180,
-        },
-        {
-          id: 6,
-          name: 'Hair Coloring',
-          description: 'Professional hair coloring service',
-          price: 120,
-          durationMinutes: 120,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  const handleBookService = (serviceId) => {
+    setSelectedServiceId(serviceId);
+    setIsBookingOpen(true);
   };
 
-  if (loading) {
-    return (
-      <div className="services-page">
-        <div className="loading">Loading services...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="services-page">
-      <div className="services-hero">
-        <h1>Our Services</h1>
-        <p>Discover our range of premium beauty and wellness services</p>
-      </div>
+    <div className="luxe-services-page">
+      {/* Hero Header */}
+      <section className="services-hero-header">
+        <div className="container" text-center>
+          <span className="section-sub-badge">BESPOKE BEAUTY MENU</span>
+          <h1 className="services-page-title">Luxury Treatments & Rituals</h1>
+          <p className="services-page-subtitle">
+            Crafted with organic essences and modern aesthetic innovations for an unparalleled experience.
+          </p>
 
-      {error && <div className="info-message">{error}</div>}
-
-      <div className="container">
-        <div className="services-list">
-          {services.map((service) => (
-            <div key={service.id} className="service-item">
-              {service.isPopular && <span className="popular-badge">Popular</span>}
-              <div className="service-info">
-                <h3>{service.name}</h3>
-                <p>{service.description}</p>
-                <div className="service-meta">
-                  <span className="price">${service.price}</span>
-                  <span className="duration">{service.durationMinutes} mins</span>
-                </div>
-              </div>
-              <div className="service-actions">
-                <Link to="/register" className="btn btn-primary">
-                  Book Now
-                </Link>
-              </div>
-            </div>
-          ))}
+          {/* Search Box */}
+          <div className="search-bar-wrap">
+            <span className="search-icon">??</span>
+            <input
+              type="text"               placeholder="Search treatments (e.g., Gold Facial, Bridal Glam, Balayage, Spa)..." value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="services-search-input"             />
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Category Tabs */}
+      <section className="services-tabs-section">
+        <div className="container">
+          <div className="categories-filter-bar">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                className={`filter-btn ${selectedCategory === cat.id ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(cat.id)}
+              >
+                <span className="cat-emoji">{cat.icon}</span>
+                <span>{cat.name}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Services Grid */}
+          <div className="services-main-grid">
+            {filteredServices.length === 0 ? (
+              <div className="no-services-found">
+                <span className="empty-icon">??</span>
+                <h3>No treatments found matching {searchQuery}</h3>
+                <p>Try searching for a different keyword or browse our categories.</p>
+                <button 
+                  className="btn" btn-secondary 
+                  onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              filteredServices.map(service => (
+                <div key={service.id} className="service-card-luxury">
+                  <div className="service-img-wrapper">
+                    <img src={service.image} alt={service.name} />
+                    {service.isPopular && <span className="badge-popular">Top Rated</span>}
+                    <span className="badge-time">?? {service.durationMinutes} min</span>
+                  </div>
+
+                  <div className="service-body">
+                    <div className="service-meta-top">
+                      <span className="rating-pill">? {service.rating} ({service.reviewsCount})</span>
+                      <span className="category-pill">{service.category.toUpperCase()}</span>
+                    </div>
+
+                    <h3 className="service-name">{service.name}</h3>
+                    <p className="service-explanation">{service.description}</p>
+
+                    <div className="service-includes-box">
+                      <span className="includes-label">Includes:</span>
+                      <ul className="includes-list">
+                        {service.features.map((feat, idx) => (
+                          <li key={idx}>? {feat}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="service-footer-action">
+                      <div className="service-price-block">
+                        <span className="cur-label">Total price</span>
+                        <span className="cur-amount"></span>
+                      </div>
+
+                      <button
+                        className="btn" btn-primary btn-book
+                        onClick={() => handleBookService(service.id)}
+                      >
+                        Book Appointment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        initialServiceId={selectedServiceId}
+      />
     </div>
   );
 };
 
 export default Services;
+

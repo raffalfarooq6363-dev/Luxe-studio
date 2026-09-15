@@ -11,8 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register Auth Service
+// Register Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Register Background Services
+builder.Services.AddHostedService<BookingReminderBackgroundService>();
 
 // CORS configuration for Frontend access
 builder.Services.AddCors(options =>

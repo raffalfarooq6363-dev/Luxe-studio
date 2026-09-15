@@ -48,6 +48,9 @@ namespace Luxe_glow_studio.Data
         public DbSet<Referral> Referrals { get; set; }
         public DbSet<FAQ> FAQs { get; set; }
 
+        // Waiting list
+        public DbSet<WaitingList> WaitingLists { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
