@@ -1,117 +1,139 @@
-.gallery-page {
-  min-height: calc(100vh - 200px);
+﻿/* Luxe Gallery Page - Pink & White Luxury Aesthetic */
+
+.luxe-gallery-page {
+  padding-bottom: 5rem;
 }
 
-.gallery-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  text-align: center;
-  padding: 4rem 2rem;
+.gallery-hero-header {
+  background: linear-gradient(135deg, #fff5f8 0%, #ffffff 50%, #fce4ec 100%);
+  padding: 4.5rem 0 3.5rem;
+  border-bottom: 1px solid #fce4ec;
 }
 
-.gallery-hero h1 {
+.gallery-page-title {
   font-size: 3rem;
-  margin-bottom: 1rem;
+  color: #2c1825;
+  margin-bottom: 0.75rem;
 }
 
-.gallery-hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
+.gallery-page-subtitle {
+  font-size: 1.1rem;
+  color: #7a6274;
+  max-width: 620px;
+  margin: 0 auto 2.5rem;
 }
 
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  padding: 3rem 0;
-}
-
-.gallery-item {
-  position: relative;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.gallery-item:hover {
-  transform: scale(1.05);
-}
-
-.gallery-image {
-  width: 100%;
-  height: 300px;
-  overflow: hidden;
-}
-
-.image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.gallery-filter-chips {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
   justify-content: center;
 }
 
-.image-placeholder span {
-  color: white;
-  font-size: 2rem;
-  font-weight: bold;
+.chip-btn {
+  background: #ffffff;
+  border: 1.5px solid #f8bbd0;
+  color: #6b4d5f;
+  padding: 0.55rem 1.25rem;
+  border-radius: 100px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.gallery-overlay {
+.chip-btn:hover {
+  border-color: #e84393;
+  color: #d81b60;
+  background: #fff5f8;
+}
+
+.chip-btn.active {
+  background: linear-gradient(135deg, #e84393 0%, #d81b60 100%);
+  color: #ffffff;
+  border-color: #d81b60;
+  box-shadow: 0 4px 15px rgba(216, 27, 96, 0.25);
+}
+
+.gallery-grid-wrap {
+  padding-top: 4rem;
+}
+
+.luxe-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4.5rem;
+}
+
+.gallery-card-item {
+  position: relative;
+  height: 340px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(232, 67, 147, 0.08);
+  border: 1.5px solid #fce4ec;
+}
+
+.gallery-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.gallery-card-item:hover .gallery-card-img {
+  transform: scale(1.1);
+}
+
+.gallery-card-overlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  color: white;
-  padding: 2rem 1rem 1rem;
-  transform: translateY(100%);
-  transition: transform 0.3s;
+  inset: 0;
+  background: linear-gradient(to top, rgba(44, 24, 37, 0.85) 0%, rgba(44, 24, 37, 0.2) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.75rem;
+  color: #ffffff;
+  transition: opacity 0.3s ease;
 }
 
-.gallery-item:hover .gallery-overlay {
-  transform: translateY(0);
+.overlay-cat {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #ff80ab;
+  letter-spacing: 1px;
+  margin-bottom: 0.35rem;
 }
 
-.gallery-overlay p {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.gallery-cta {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: #f8f9fa;
-  border-radius: 15px;
-  margin: 3rem 0;
-}
-
-.gallery-cta h2 {
-  font-size: 2.5rem;
-  color: #333;
+.gallery-card-overlay h4 {
+  font-size: 1.2rem;
+  color: #ffffff;
   margin-bottom: 1rem;
 }
 
-.gallery-cta p {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 2rem;
+.btn-sm {
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8rem;
+  width: fit-content;
 }
 
-@media (max-width: 768px) {
-  .gallery-hero h1 {
-    font-size: 2rem;
-  }
+.gallery-cta-banner {
+  background: linear-gradient(135deg, #fff0f3 0%, #fce4ec 100%);
+  border: 1.5px solid #f8bbd0;
+  border-radius: 24px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+}
 
-  .gallery-grid {
-    grid-template-columns: 1fr;
-  }
+.gallery-cta-banner h2 {
+  font-size: 2.2rem;
+  color: #2c1825;
+  margin-bottom: 0.5rem;
+}
 
-  .gallery-cta h2 {
-    font-size: 2rem;
-  }
+.gallery-cta-banner p {
+  color: #7a6274;
+  font-size: 1.05rem;
+  margin-bottom: 1.75rem;
 }

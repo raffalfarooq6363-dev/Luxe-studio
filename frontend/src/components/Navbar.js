@@ -1,124 +1,27 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import BookingModal from './BookingModal';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    setIsMenuOpen(false);
-  };
+  const dashboardPath = user?.role?.toLowerCase() === 'admin' ? '/admin' : user?.role?.toLowerCase() === 'practitioner' ? '/practitioner' : '/customer';
+  const closeMenu = () => setIsMenuOpen(false);
+  const handleLogout = () => { logout(); closeMenu(); navigate('/'); };
 
-  const getDashboardLink = () => {
-    if (!user) return null;
-    switch (user.role?.toLowerCase()) {
-      case 'admin':
-        return '/admin';
-      case 'customer':
-        return '/customer';
-      case 'practitioner':
-        return '/practitioner';
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          Luxe Glow Studio
-        </Link>
-
-        <button
-          className="navbar-toggle"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <ul className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
-          <li className="navbar-item">
-            <Link to="/" className="navbar-link" onClick={() => setIsMenuOpen(false)}>
-              Home
-            </Link>
-          </li>
-          <li className="navbar-item">
-            <Link to="/about" className="navbar-link" onClick={() => setIsMenuOpen(false)}>
-              About
-            </Link>
-          </li>
-          <li className="navbar-item">
-            <Link to="/services" className="navbar-link" onClick={() => setIsMenuOpen(false)}>
-              Services
-            </Link>
-          </li>
-          <li className="navbar-item">
-            <Link to="/gallery" className="navbar-link" onClick={() => setIsMenuOpen(false)}>
-              Gallery
-            </Link>
-          </li>
-          <li className="navbar-item">
-            <Link to="/contact" className="navbar-link" onClick={() => setIsMenuOpen(false)}>
-              Contact
-            </Link>
-          </li>
-
-          {user ? (
-            <>
-              <li className="navbar-item">
-                <Link
-                  to={getDashboardLink()}
-                  className="navbar-link navbar-link-dashboard"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li className="navbar-item">
-                <span className="navbar-user">
-                  Welcome, {user.firstName || user.email}
-                </span>
-              </li>
-              <li className="navbar-item">
-                <button className="navbar-btn navbar-btn-logout" onClick={handleLogout}>
-                  Logout
-                </button>
-              </li>
-            </>
-          ) : (
-            <>
-              <li className="navbar-item">
-                <Link
-                  to="/login"
-                  className="navbar-btn navbar-btn-login"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              </li>
-              <li className="navbar-item">
-                <Link
-                  to="/register"
-                  className="navbar-btn navbar-btn-register"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </li>
-            </>
-          )}
-        </ul>
-      </div>
-    </nav>
-  );
+  return <>
+    <nav className="luxe-navbar"><div className="navbar-container">
+      <Link to="/" className="navbar-logo" onClick={closeMenu}><span className="logo-icon">L</span><div className="logo-text"><span className="brand-main">Luxe Glow</span></div></Link>
+      <button type="button" className={`navbar-toggle ${isMenuOpen ? 'open' : ''}`} onClick={() => setIsMenuOpen((open) => !open)} aria-label="Toggle navigation menu"><span /><span /><span /></button>
+      <div className={`navbar-menu-wrap ${isMenuOpen ? 'active' : ''}`}><ul className="navbar-nav-links">{[['/', 'Home'], ['/services', 'Services'], ['/about', 'About Us'], ['/gallery', 'Lookbook'], ['/contact', 'Contact']].map(([path, label]) => <li key={path}><Link to={path} className="nav-link" onClick={closeMenu}>{label}</Link></li>)}</ul><div className="navbar-actions"><button type="button" className="nav-book-btn" onClick={() => { closeMenu(); setIsBookingOpen(true); }}>Book Appointment</button>{user ? <div className="user-dropdown-area"><Link to={dashboardPath} className="nav-btn-dashboard" onClick={closeMenu}>Dashboard</Link><button type="button" className="nav-btn-logout" onClick={handleLogout}>Logout</button></div> : <div className="auth-buttons"><Link to="/login" className="nav-btn-login" onClick={closeMenu}>Login</Link><Link to="/register" className="nav-btn-register" onClick={closeMenu}>Register</Link></div>}</div></div>
+    </div></nav>
+    <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
+  </>;
 };
 
 export default Navbar;

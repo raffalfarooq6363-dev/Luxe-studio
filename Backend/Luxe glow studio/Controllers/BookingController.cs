@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Luxe_glow_studio.Data;
 using Luxe_glow_studio.Models;
+using Luxe_glow_studio.Services;
 
 namespace Luxe_glow_studio.Controllers
 {
@@ -10,10 +11,12 @@ namespace Luxe_glow_studio.Controllers
     public class BookingController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IBookingService _bookingService;
 
-        public BookingController(AppDbContext context)
+        public BookingController(AppDbContext context, IBookingService bookingService)
         {
             _context = context;
+            _bookingService = bookingService;
         }
 
         /// <summary>
@@ -22,59 +25,62 @@ namespace Luxe_glow_studio.Controllers
         [HttpPost]
         public async Task<ActionResult<BookingResponseDto>> CreateBooking([FromBody] CreateBookingDto bookingDto)
         {
-            // Validate user exists
-            var user = await _context.Users.FindAsync(bookingDto.UserId);
-            if (user == null)
+            var result = await _bookingService.CreateBookingAsync(bookingDto);
+
+            if (!result.IsSuccess)
             {
-                return BadRequest(new { message = "User not found" });
+                return BadRequest(new { message = result.Message });
             }
 
-            // Validate service exists
-            var service = await _context.Services.FindAsync(bookingDto.ServiceId);
-            if (service == null)
+            var bookingResponse = await GetBookingResponseDto(result.AppointmentId);
+            return CreatedAtAction(nameof(GetBooking), new { id = result.AppointmentId }, bookingResponse);
+        }
+
+        /// <summary>
+        /// Create a multi-service booking
+        /// </summary>
+        [HttpPost("multi-service")]
+        public async Task<ActionResult<MultiBookingResponseDto>> CreateMultiServiceBooking([FromBody] CreateMultiServiceBookingDto bookingDto)
+        {
+            var result = await _bookingService.CreateMultiServiceBookingAsync(bookingDto);
+
+            if (!result.IsSuccess)
             {
-                return BadRequest(new { message = "Service not found" });
+                return BadRequest(new { message = result.Message });
             }
 
-            // Calculate end time based on service duration
-            var endTime = bookingDto.StartTime.Add(TimeSpan.FromMinutes(service.DurationMinutes));
-
-            // Check if time slot is available
-            var isAvailable = await IsTimeSlotAvailable(
-                bookingDto.AppointmentDate, 
-                bookingDto.StartTime, 
-                endTime, 
-                bookingDto.AssignedStaffMember
-            );
-
-            if (!isAvailable)
+            var bookings = new List<BookingResponseDto>();
+            foreach (var appointmentId in result.AppointmentIds)
             {
-                return BadRequest(new { message = "Time slot is not available" });
+                var booking = await GetBookingResponseDto(appointmentId);
+                if (booking != null)
+                {
+                    bookings.Add(booking);
+                }
             }
 
-            var appointment = new Appointment
+            return Ok(new MultiBookingResponseDto
             {
-                UserId = bookingDto.UserId,
-                ServiceId = bookingDto.ServiceId,
-                AppointmentDate = bookingDto.AppointmentDate,
-                StartTime = bookingDto.StartTime,
-                EndTime = endTime,
-                Status = "Pending",
-                Notes = bookingDto.Notes,
-                SpecialRequests = bookingDto.SpecialRequests,
-                BookingDate = DateTime.UtcNow,
-                TotalAmount = service.Price,
-                AssignedStaffMember = bookingDto.AssignedStaffMember,
-                ClientPhone = bookingDto.ClientPhone ?? user.PhoneNumber,
-                ClientEmail = bookingDto.ClientEmail ?? user.Email
-            };
+                Bookings = bookings,
+                TotalAmount = bookings.Sum(b => b.TotalAmount),
+                Message = result.Message
+            });
+        }
 
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
+        /// <summary>
+        /// Add to waiting list
+        /// </summary>
+        [HttpPost("waiting-list")]
+        public async Task<ActionResult> AddToWaitingList([FromBody] WaitingListDto waitingListDto)
+        {
+            var success = await _bookingService.AddToWaitingListAsync(waitingListDto);
 
-            // Return full booking details
-            var bookingResponse = await GetBookingResponseDto(appointment.Id);
-            return CreatedAtAction(nameof(GetBooking), new { id = appointment.Id }, bookingResponse);
+            if (!success)
+            {
+                return BadRequest(new { message = "Failed to add to waiting list" });
+            }
+
+            return Ok(new { message = "Successfully added to waiting list. We'll notify you when a slot becomes available." });
         }
 
         /// <summary>
@@ -170,34 +176,34 @@ namespace Luxe_glow_studio.Controllers
         [HttpGet("availability")]
         public async Task<ActionResult<IEnumerable<TimeSlotDto>>> GetAvailability([FromQuery] BookingAvailabilityDto availabilityDto)
         {
-            var service = await _context.Services.FindAsync(availabilityDto.ServiceId);
-            if (service == null)
-            {
-                return BadRequest(new { message = "Service not found" });
-            }
-
-            var timeSlots = GenerateTimeSlots(availabilityDto.Date, service.DurationMinutes);
-            var availableSlots = new List<TimeSlotDto>();
-
-            foreach (var slot in timeSlots)
-            {
-                var isAvailable = await IsTimeSlotAvailable(
-                    availabilityDto.Date,
-                    slot.StartTime,
-                    slot.EndTime,
-                    availabilityDto.StaffMember
-                );
-
-                availableSlots.Add(new TimeSlotDto
-                {
-                    StartTime = slot.StartTime,
-                    EndTime = slot.EndTime,
-                    IsAvailable = isAvailable,
-                    UnavailableReason = isAvailable ? null : "Time slot is already booked"
-                });
-            }
+            var availableSlots = await _bookingService.GetAvailableTimeSlotsAsync(
+                availabilityDto.ServiceId, 
+                availabilityDto.Date, 
+                availabilityDto.StaffMember
+            );
 
             return Ok(availableSlots);
+        }
+
+        /// <summary>
+        /// Validate if a booking can be made
+        /// </summary>
+        [HttpPost("validate")]
+        public async Task<ActionResult> ValidateBooking([FromBody] CreateBookingDto bookingDto)
+        {
+            var isValid = await _bookingService.ValidateBookingAsync(
+                bookingDto.ServiceId,
+                bookingDto.AppointmentDate,
+                bookingDto.StartTime,
+                bookingDto.AssignedStaffMember
+            );
+
+            if (isValid)
+            {
+                return Ok(new { message = "Booking is valid", canBook = true });
+            }
+
+            return BadRequest(new { message = "Booking validation failed", canBook = false });
         }
 
         /// <summary>
@@ -247,48 +253,36 @@ namespace Luxe_glow_studio.Controllers
         [HttpPut("{id}/reschedule")]
         public async Task<ActionResult<BookingResponseDto>> RescheduleBooking(int id, [FromBody] RescheduleBookingDto rescheduleDto)
         {
-            var appointment = await _context.Appointments.Include(a => a.Service).FirstOrDefaultAsync(a => a.Id == id);
-            if (appointment == null)
+            var result = await _bookingService.RescheduleBookingAsync(
+                id, 
+                rescheduleDto.NewAppointmentDate, 
+                rescheduleDto.NewStartTime, 
+                rescheduleDto.Reason
+            );
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+
+            var bookingResponse = await GetBookingResponseDto(id);
+            return Ok(bookingResponse);
+        }
+
+        /// <summary>
+        /// Confirm a booking
+        /// </summary>
+        [HttpPut("{id}/confirm")]
+        public async Task<ActionResult> ConfirmBooking(int id)
+        {
+            var success = await _bookingService.ConfirmBookingAsync(id);
+
+            if (!success)
             {
                 return NotFound(new { message = "Booking not found" });
             }
 
-            if (appointment.Status == "Completed" || appointment.Status == "Cancelled")
-            {
-                return BadRequest(new { message = "Cannot reschedule completed or cancelled bookings" });
-            }
-
-            var newEndTime = rescheduleDto.NewStartTime.Add(TimeSpan.FromMinutes(appointment.Service!.DurationMinutes));
-
-            // Check if new time slot is available
-            var isAvailable = await IsTimeSlotAvailable(
-                rescheduleDto.NewAppointmentDate,
-                rescheduleDto.NewStartTime,
-                newEndTime,
-                appointment.AssignedStaffMember,
-                id // Exclude current appointment from conflict check
-            );
-
-            if (!isAvailable)
-            {
-                return BadRequest(new { message = "New time slot is not available" });
-            }
-
-            appointment.AppointmentDate = rescheduleDto.NewAppointmentDate;
-            appointment.StartTime = rescheduleDto.NewStartTime;
-            appointment.EndTime = newEndTime;
-            appointment.IsRescheduled = true;
-            appointment.Status = "Pending"; // Reset to pending after reschedule
-
-            if (!string.IsNullOrEmpty(rescheduleDto.Reason))
-            {
-                appointment.Notes = appointment.Notes + "\n" + $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm}] Rescheduled: {rescheduleDto.Reason}";
-            }
-
-            await _context.SaveChangesAsync();
-
-            var bookingResponse = await GetBookingResponseDto(appointment.Id);
-            return Ok(bookingResponse);
+            return Ok(new { message = "Booking confirmed successfully" });
         }
 
         /// <summary>
@@ -297,19 +291,49 @@ namespace Luxe_glow_studio.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id, [FromQuery] string? reason)
         {
-            var appointment = await _context.Appointments.FindAsync(id);
-            if (appointment == null)
+            var success = await _bookingService.CancelBookingAsync(id, reason);
+
+            if (!success)
             {
                 return NotFound(new { message = "Booking not found" });
             }
 
-            appointment.Status = "Cancelled";
-            appointment.CancelledAt = DateTime.UtcNow;
-            appointment.CancellationReason = reason;
-
-            await _context.SaveChangesAsync();
-
             return Ok(new { message = "Booking cancelled successfully" });
+        }
+
+        /// <summary>
+        /// Get upcoming appointments for a user
+        /// </summary>
+        [HttpGet("upcoming/{userId}")]
+        public async Task<ActionResult<IEnumerable<BookingResponseDto>>> GetUpcomingAppointments(int userId)
+        {
+            var appointments = await _bookingService.GetUpcomingAppointmentsAsync(userId);
+
+            var bookings = appointments.Select(a => new BookingResponseDto
+            {
+                Id = a.Id,
+                UserId = a.UserId,
+                UserName = a.User?.FullName ?? "",
+                UserEmail = a.User?.Email ?? "",
+                ServiceId = a.ServiceId,
+                ServiceName = a.Service?.Name ?? "",
+                ServicePrice = a.Service?.Price ?? 0,
+                ServiceDuration = a.Service?.DurationMinutes ?? 0,
+                AppointmentDate = a.AppointmentDate,
+                StartTime = a.StartTime,
+                EndTime = a.EndTime,
+                Status = a.Status,
+                Notes = a.Notes,
+                SpecialRequests = a.SpecialRequests,
+                BookingDate = a.BookingDate,
+                TotalAmount = a.TotalAmount,
+                AssignedStaffMember = a.AssignedStaffMember,
+                ClientPhone = a.ClientPhone,
+                ClientEmail = a.ClientEmail,
+                IsRescheduled = a.IsRescheduled
+            }).ToList();
+
+            return Ok(bookings);
         }
 
         /// <summary>
@@ -321,38 +345,7 @@ namespace Luxe_glow_studio.Controllers
             startDate ??= DateTime.Today.AddDays(-30);
             endDate ??= DateTime.Today;
 
-            var bookings = await _context.Appointments
-                .Where(a => a.AppointmentDate >= startDate && a.AppointmentDate <= endDate)
-                .ToListAsync();
-
-            var todayBookings = await _context.Appointments
-                .Where(a => a.AppointmentDate.Date == DateTime.Today)
-                .ToListAsync();
-
-            var weeklyStats = new List<DailyBookingStats>();
-            for (var date = startDate.Value; date <= endDate.Value; date = date.AddDays(1))
-            {
-                var dayBookings = bookings.Where(a => a.AppointmentDate.Date == date.Date).ToList();
-                weeklyStats.Add(new DailyBookingStats
-                {
-                    Date = date,
-                    BookingCount = dayBookings.Count,
-                    Revenue = dayBookings.Where(b => b.Status == "Completed").Sum(b => b.TotalAmount)
-                });
-            }
-
-            var stats = new BookingStatsDto
-            {
-                TotalBookings = bookings.Count,
-                PendingBookings = bookings.Count(b => b.Status == "Pending"),
-                ConfirmedBookings = bookings.Count(b => b.Status == "Confirmed"),
-                CompletedBookings = bookings.Count(b => b.Status == "Completed"),
-                CancelledBookings = bookings.Count(b => b.Status == "Cancelled"),
-                TotalRevenue = bookings.Where(b => b.Status == "Completed").Sum(b => b.TotalAmount),
-                TodayRevenue = todayBookings.Where(b => b.Status == "Completed").Sum(b => b.TotalAmount),
-                TodayBookings = todayBookings.Count,
-                WeeklyStats = weeklyStats
-            };
+            var stats = await _bookingService.GetBookingStatisticsAsync(startDate.Value, endDate.Value);
 
             return Ok(stats);
         }
@@ -377,36 +370,6 @@ namespace Luxe_glow_studio.Controllers
 
             var conflictingAppointments = await query.AnyAsync();
             return !conflictingAppointments;
-        }
-
-        private List<TimeSlotDto> GenerateTimeSlots(DateTime date, int serviceDurationMinutes)
-        {
-            var slots = new List<TimeSlotDto>();
-            var startHour = 9; // 9 AM
-            var endHour = 18; // 6 PM
-            var slotDuration = TimeSpan.FromMinutes(serviceDurationMinutes);
-
-            for (var hour = startHour; hour < endHour; hour++)
-            {
-                for (var minute = 0; minute < 60; minute += 30) // 30-minute intervals
-                {
-                    var startTime = new TimeSpan(hour, minute, 0);
-                    var endTime = startTime.Add(slotDuration);
-
-                    // Don't create slots that go beyond closing time
-                    if (endTime <= new TimeSpan(endHour, 0, 0))
-                    {
-                        slots.Add(new TimeSlotDto
-                        {
-                            StartTime = startTime,
-                            EndTime = endTime,
-                            IsAvailable = true
-                        });
-                    }
-                }
-            }
-
-            return slots;
         }
 
         private async Task<BookingResponseDto?> GetBookingResponseDto(int appointmentId)
@@ -440,5 +403,12 @@ namespace Luxe_glow_studio.Controllers
                 })
                 .FirstOrDefaultAsync();
         }
+    }
+
+    public class MultiBookingResponseDto
+    {
+        public List<BookingResponseDto> Bookings { get; set; } = new();
+        public decimal TotalAmount { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }
