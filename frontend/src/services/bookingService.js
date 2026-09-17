@@ -23,13 +23,18 @@ const bookingService = {
     return response.data;
   },
 
+  getUserBookings: async (userId) => {
+    const response = await api.get('/booking', { params: { userId, page: 1, pageSize: 100 } });
+    return response.data.bookings || [];
+  },
+
   updateBooking: async (bookingId, bookingData) => {
     const response = await api.put(`/booking/${bookingId}`, bookingData);
     return response.data;
   },
 
   cancelBooking: async (bookingId) => {
-    const response = await api.delete(`/booking/${bookingId}/cancel`);
+    const response = await api.delete(`/booking/${bookingId}`);
     return response.data;
   },
 };

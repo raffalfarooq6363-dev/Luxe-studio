@@ -40,6 +40,8 @@ namespace Luxe_glow_studio.Models.DTOs
         [StringLength(10)]
         public string? PostalCode { get; set; }
 
+        public string? ProfileImageUrl { get; set; }
+
         public bool ReceiveEmailNotifications { get; set; } = true;
 
         public bool ReceiveSmsNotifications { get; set; } = false;
@@ -120,6 +122,8 @@ namespace Luxe_glow_studio.Models.DTOs
 
         [StringLength(10)]
         public string? PostalCode { get; set; }
+
+        public string? ProfileImageUrl { get; set; }
 
         public string? EmergencyContactName { get; set; }
 

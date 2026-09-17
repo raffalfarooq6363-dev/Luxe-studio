@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAuthErrorMessage } from '../services/authService';
 import './Auth.css';
 
 const AdminRegister = () => {
@@ -11,7 +12,6 @@ const AdminRegister = () => {
     password: '',
     confirmPassword: '',
     phoneNumber: '',
-    role: 'Admin',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,8 +34,8 @@ const AdminRegister = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
 
@@ -44,9 +44,12 @@ const AdminRegister = () => {
     try {
       const { confirmPassword, ...userData } = formData;
       await adminRegister(userData);
-      navigate('/admin');
+      navigate('/admin/login', {
+        replace: true,
+        state: { message: 'Admin account created successfully. Please login.' },
+      });
     } catch (err) {
-      setError(err.response?.data?.message || 'Admin registration failed. Please check your credentials.');
+      setError(getAuthErrorMessage(err, 'Admin registration failed. Please check your credentials.'));
     } finally {
       setLoading(false);
     }

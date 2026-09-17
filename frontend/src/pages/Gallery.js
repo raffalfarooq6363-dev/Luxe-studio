@@ -72,16 +72,16 @@ const Gallery = () => {
         </div>
       </div>
 
-      <div className="containe"r gallery-grid-wrap>
+      <div className="container gallery-grid-wrap">
         <div className="luxe-gallery-grid">
           {filtered.map((item) => (
             <div key={item.id} className="gallery-card-item">
-              <img src={item.image} alt={item.title} className="gallery-card-im"g />
+              <img src={item.image} alt={item.title} className="gallery-card-img" />
               <div className="gallery-card-overlay">
                 <span className="overlay-cat">{item.category.toUpperCase()}</span>
                 <h4>{item.title}</h4>
                 <button 
-                  className="bt"n btn-white btn-sm
+                  className="btn btn-white btn-sm"
                   onClick={() => setIsBookingOpen(true)}
                 >
                   Book This Look ?
@@ -95,7 +95,7 @@ const Gallery = () => {
           <h2>Ready For Your Transformation?</h2>
           <p>Let our specialists craft your bespoke look for your next event or weekly glow.</p>
           <button 
-            className="bt"n btn-primary btn-large
+            className="btn btn-primary btn-large"
             onClick={() => setIsBookingOpen(true)}
           >
             <span>? Reserve Your Appointment</span>

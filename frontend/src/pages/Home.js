@@ -25,11 +25,24 @@ const Home = () => {
     <div className="luxe-home">
       <section className="luxe-hero">
         <div className="container hero-scene">
-          <div className="feature-photo left-photo">
-            <img
-              src="https://images.unsplash.com/photo-1521590832167-7e5c8e2a3121?auto=format&fit=crop&w=1200&q=80"
-              alt="Salon interior"
-            />
+          <div className="hero-copy">
+            <span className="hero-eyebrow">THE LUXE GLOW EXPERIENCE</span>
+            <h1>Where beauty becomes your signature.</h1>
+            <p className="hero-description">
+              Bespoke skin, hair, makeup, and spa rituals designed to leave you
+              feeling polished, peaceful, and completely yourself.
+            </p>
+            <div className="hero-highlights" aria-label="Studio highlights">
+              <span>Personalised care</span>
+              <span>Luxury products</span>
+              <span>Expert artists</span>
+            </div>
+            <div className="hero-actions">
+              <button type="button" className="btn btn-primary btn-large" onClick={() => openBooking()}>
+                Reserve Your Ritual
+              </button>
+              <Link to="/services" className="hero-text-link">Explore treatments <span aria-hidden="true">-&gt;</span></Link>
+            </div>
           </div>
           <div className="feature-photo right-photo">
             <img

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAuthErrorMessage } from '../services/authService';
 import './Auth.css';
 
 const AdminLogin = () => {
@@ -9,7 +10,8 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { adminLogin, logout } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,10 +19,11 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const data = await login(email, password);
+      const data = await adminLogin(email, password);
       
       // Check if user is admin
-      if (data.user.role?.toLowerCase() !== 'admin') {
+      if (data.user?.role?.toLowerCase() !== 'admin') {
+        logout();
         setError('Access Denied: Admin credentials required. Only administrators can login here.');
         setLoading(false);
         return;
@@ -28,7 +31,7 @@ const AdminLogin = () => {
 
       navigate('/admin');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your admin credentials.');
+      setError(getAuthErrorMessage(err, 'Login failed. Please check your admin credentials.'));
     } finally {
       setLoading(false);
     }
@@ -44,6 +47,7 @@ const AdminLogin = () => {
         </div>
 
         {error && <div className="auth-error">{error}</div>}
+        {location.state?.message && !error && <div className="auth-success">{location.state.message}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">

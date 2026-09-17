@@ -243,6 +243,19 @@ namespace Luxe_glow_studio.Controllers
 
             await _context.SaveChangesAsync();
 
+            var notificationType = statusDto.Status.Trim().ToLowerInvariant() switch
+            {
+                "confirmed" => NotificationType.BookingConfirmed,
+                "cancelled" or "rejected" => NotificationType.BookingCancelled,
+                "completed" => NotificationType.BookingCompleted,
+                "pending" => NotificationType.BookingConfirmation,
+                _ => (NotificationType?)null
+            };
+            if (notificationType.HasValue)
+            {
+                await _bookingService.SendBookingNotificationAsync(appointment.Id, notificationType.Value);
+            }
+
             var bookingResponse = await GetBookingResponseDto(appointment.Id);
             return Ok(bookingResponse);
         }

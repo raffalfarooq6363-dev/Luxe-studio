@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAuthErrorMessage } from '../services/authService';
 import './Auth.css';
 
 const Login = () => {
@@ -9,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,23 +21,27 @@ const Login = () => {
       const data = await login(email, password);
       
       // Block admin from customer login page
-      const role = data.user.role?.toLowerCase();
+      const role = data.user?.role?.toLowerCase();
       if (role === 'admin') {
+        logout();
         setError('Admin users cannot login here. Please use the admin portal.');
         setLoading(false);
         return;
       }
 
-      // Redirect customers and practitioners
+      if (!data.user) {
+        logout();
+        throw new Error('The login response did not include a user.');
+      }
+
+      // Redirect customers
       if (role === 'customer') {
         navigate('/customer');
-      } else if (role === 'practitioner') {
-        navigate('/practitioner');
       } else {
         navigate('/');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(getAuthErrorMessage(err, 'Login failed. Please check your credentials.'));
     } finally {
       setLoading(false);
     }
