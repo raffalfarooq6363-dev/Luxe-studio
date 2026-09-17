@@ -25,7 +25,7 @@ const Services = () => {
     <div className="luxe-services-page">
       {/* Hero Header */}
       <section className="services-hero-header">
-        <div className="container" text-center>
+        <div className="container text-center">
           <span className="section-sub-badge">BESPOKE BEAUTY MENU</span>
           <h1 className="services-page-title">Luxury Treatments & Rituals</h1>
           <p className="services-page-subtitle">
@@ -67,7 +67,7 @@ const Services = () => {
                 <h3>No treatments found matching {searchQuery}</h3>
                 <p>Try searching for a different keyword or browse our categories.</p>
                 <button 
-                  className="btn" btn-secondary 
+                  className="btn btn-secondary"
                   onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
                 >
                   Reset Filters
@@ -107,7 +107,7 @@ const Services = () => {
                       </div>
 
                       <button
-                        className="btn" btn-primary btn-book
+                        className="btn btn-primary btn-book"
                         onClick={() => handleBookService(service.id)}
                       >
                         Book Appointment

@@ -134,12 +134,6 @@ namespace Luxe_glow_studio.Controllers
                 return BadRequest(new { message = "Invalid login parameters" });
             }
 
-            // Verify Admin Secret Passkey first
-            if (!_authService.VerifyAdminSecretPasskey(adminLoginDto.SecretPasskey))
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = "Access Denied: Invalid Admin Secret Passkey" });
-            }
-
             var normalizedEmail = adminLoginDto.Email.Trim().ToLowerInvariant();
             var user = await _context.Users
                 .Include(u => u.PractitionerProfile)
@@ -234,6 +228,7 @@ namespace Luxe_glow_studio.Controllers
             user.City = profileDto.City?.Trim();
             user.State = profileDto.State?.Trim();
             user.PostalCode = profileDto.PostalCode?.Trim();
+            user.ProfileImageUrl = profileDto.ProfileImageUrl?.Trim();
             user.EmergencyContactName = profileDto.EmergencyContactName?.Trim();
             user.EmergencyContactPhone = profileDto.EmergencyContactPhone?.Trim();
             user.EmergencyContactRelation = profileDto.EmergencyContactRelation?.Trim();
@@ -287,19 +282,6 @@ namespace Luxe_glow_studio.Controllers
         [HttpPost("admin/setup")]
         public async Task<IActionResult> SetupAdmin([FromBody] AdminSetupDto setupDto)
         {
-            // Check if admin already exists
-            var adminExists = await _context.Users.AnyAsync(u => u.Role == "Admin");
-            if (adminExists)
-            {
-                return BadRequest(new { message = "Admin account already exists" });
-            }
-
-            // Verify admin setup passkey
-            if (!_authService.VerifyAdminSecretPasskey(setupDto.SetupPasskey))
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = "Invalid admin setup passkey" });
-            }
-
             var normalizedEmail = setupDto.Email.Trim().ToLowerInvariant();
             if (await _context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail))
             {
@@ -390,8 +372,6 @@ namespace Luxe_glow_studio.Controllers
         [Required]
         public string Password { get; set; } = string.Empty;
 
-        [Required]
-        public string SecretPasskey { get; set; } = string.Empty;
     }
 
     public class AdminSetupDto
@@ -415,7 +395,5 @@ namespace Luxe_glow_studio.Controllers
         [StringLength(20)]
         public string? PhoneNumber { get; set; }
 
-        [Required]
-        public string SetupPasskey { get; set; } = string.Empty;
     }
 }

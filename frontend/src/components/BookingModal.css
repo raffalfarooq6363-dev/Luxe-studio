@@ -506,6 +506,29 @@
   gap: 1rem;
 }
 
+.cash-payment-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 0.55rem;
+  row-gap: 0.1rem;
+  min-height: 44px;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #f8bbd0;
+  border-radius: 10px;
+  background: #fff0f4;
+  color: #5c4152;
+}
+
+.cash-payment-option span {
+  grid-row: span 2;
+  font-size: 1.25rem;
+}
+
+.cash-payment-option small {
+  color: #8c7385;
+}
+
 .input-field {
   display: flex;
   flex-direction: column;

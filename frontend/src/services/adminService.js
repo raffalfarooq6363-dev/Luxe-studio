@@ -18,6 +18,21 @@ const adminService = {
     return response.data;
   },
 
+  getBookings: async (searchParams = {}) => {
+    const response = await api.get('/booking', { params: searchParams });
+    return response.data;
+  },
+
+  updateBookingStatus: async (bookingId, status, reason = '') => {
+    const response = await api.put(`/booking/${bookingId}/status`, { status, reason });
+    return response.data;
+  },
+
+  getBookingStats: async (startDate, endDate) => {
+    const response = await api.get('/booking/stats', { params: { startDate, endDate } });
+    return response.data;
+  },
+
   getUser: async (userId) => {
     const response = await api.get(`/admin/users/${userId}`);
     return response.data;

@@ -51,14 +51,14 @@ export const getStoredBookings = () => {
   }
 };
 
-export const saveNewBooking = (bookingData) => {
+export const saveNewBooking = (bookingData, status = 'Confirmed') => {
   try {
     const existing = getStoredBookings();
     const referenceId = `LX-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRecord = {
       ...bookingData,
       id: referenceId,
-      status: 'Confirmed',
+      status,
       createdAt: new Date().toISOString()
     };
     const updated = [newRecord, ...existing];

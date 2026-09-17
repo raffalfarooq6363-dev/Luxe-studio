@@ -23,11 +23,13 @@ namespace Luxe_glow_studio.Services
     {
         private readonly AppDbContext _context;
         private readonly ILogger<BookingService> _logger;
+        private readonly IEmailService _emailService;
 
-        public BookingService(AppDbContext context, ILogger<BookingService> logger)
+        public BookingService(AppDbContext context, ILogger<BookingService> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public async Task<BookingResult> CreateBookingAsync(CreateBookingDto bookingDto)
@@ -417,6 +419,18 @@ namespace Luxe_glow_studio.Services
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
+            if (!string.IsNullOrWhiteSpace(appointment.ClientEmail ?? appointment.User?.Email))
+            {
+                var emailSent = await _emailService.SendAsync(
+                    appointment.ClientEmail ?? appointment.User!.Email,
+                    notification.Title,
+                    BuildBookingEmail(type, appointment));
+                notification.EmailSent = emailSent;
+                notification.EmailSentAt = emailSent ? DateTime.UtcNow : null;
+                notification.EmailError = emailSent ? null : "Email delivery is not configured or failed.";
+                await _context.SaveChangesAsync();
+            }
+
             _logger.LogInformation($"Notification sent for booking {bookingId}: {type}");
 
             return true;
@@ -577,11 +591,20 @@ namespace Luxe_glow_studio.Services
                 NotificationType.BookingConfirmation => $"Your booking for {appointment.Service?.Name} has been created for {appointment.AppointmentDate:MMM dd, yyyy} at {appointment.StartTime}",
                 NotificationType.BookingConfirmed => $"Your booking for {appointment.Service?.Name} on {appointment.AppointmentDate:MMM dd, yyyy} at {appointment.StartTime} has been confirmed",
                 NotificationType.BookingRescheduled => $"Your booking has been rescheduled to {appointment.AppointmentDate:MMM dd, yyyy} at {appointment.StartTime}",
-                NotificationType.BookingCancelled => $"Your booking for {appointment.Service?.Name} on {appointment.AppointmentDate:MMM dd, yyyy} has been cancelled",
+                NotificationType.BookingCancelled => $"Your booking for {appointment.Service?.Name} on {appointment.AppointmentDate:MMM dd, yyyy} has been rejected. Reason: {appointment.CancellationReason ?? "The studio could not accommodate this request."}",
                 NotificationType.BookingReminder => $"Reminder: You have an appointment for {appointment.Service?.Name} tomorrow at {appointment.StartTime}",
                 NotificationType.BookingCompleted => $"Thank you for visiting us! Your appointment for {appointment.Service?.Name} is complete",
                 _ => "Booking update"
             };
+        }
+
+        private string BuildBookingEmail(NotificationType type, Appointment appointment)
+        {
+            var heading = GetNotificationTitle(type);
+            var reason = type == NotificationType.BookingCancelled
+                ? $"<p><strong>Reason:</strong> {System.Net.WebUtility.HtmlEncode(appointment.CancellationReason ?? "The studio could not accommodate this request.")}</p>"
+                : string.Empty;
+            return $"<div style='font-family:Arial,sans-serif;line-height:1.6;color:#2c1825'><h2>{heading}</h2><p>Hello {System.Net.WebUtility.HtmlEncode(appointment.User?.FirstName ?? "there")},</p><p>{System.Net.WebUtility.HtmlEncode(GetNotificationMessage(type, appointment))}</p>{reason}<p><strong>Service:</strong> {System.Net.WebUtility.HtmlEncode(appointment.Service?.Name ?? "Beauty treatment")}<br/><strong>Date:</strong> {appointment.AppointmentDate:MMM dd, yyyy}<br/><strong>Time:</strong> {appointment.StartTime}<br/><strong>Amount:</strong> ${appointment.TotalAmount:N2}</p><p>Regards,<br/>Luxe Glow Studio</p></div>";
         }
     }
 

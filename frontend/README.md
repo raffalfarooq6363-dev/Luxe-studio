@@ -115,6 +115,27 @@ src/
    npm run build
    ```
 
+### Booking Email Notifications
+
+The backend sends email when a customer creates a booking, when an admin confirms it, and when an admin rejects it. Rejected-booking emails include the reason entered by the admin.
+
+Configure SMTP in the backend `appsettings.Development.json` or with environment variables before starting the API:
+
+```json
+{
+   "Email": {
+      "SmtpHost": "smtp.gmail.com",
+      "SmtpPort": 587,
+      "EnableSsl": true,
+      "Username": "studio@example.com",
+      "Password": "your-app-password",
+      "From": "studio@example.com"
+   }
+}
+```
+
+For Gmail, use a Google App Password rather than the normal account password. Keep SMTP credentials out of source control.
+
 ## 🔐 Authentication Flow
 
 1. User registers/logins through `/register` or `/login`

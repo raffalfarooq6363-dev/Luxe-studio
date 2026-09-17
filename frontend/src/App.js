@@ -19,7 +19,6 @@ import ResetPassword from './pages/ResetPassword';
 
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import PractitionerDashboard from './pages/practitioner/PractitionerDashboard';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -29,7 +28,7 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -65,14 +64,6 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/practitioner/*"
-            element={
-              <ProtectedRoute role="practitioner">
-                <PractitionerDashboard />
               </ProtectedRoute>
             }
           />

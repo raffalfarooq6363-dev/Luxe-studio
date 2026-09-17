@@ -10,7 +10,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const dashboardPath = user?.role?.toLowerCase() === 'admin' ? '/admin' : user?.role?.toLowerCase() === 'practitioner' ? '/practitioner' : '/customer';
+  const dashboardPath = user?.role?.toLowerCase() === 'admin' ? '/admin' : '/customer';
   const closeMenu = () => setIsMenuOpen(false);
   const handleLogout = () => { logout(); closeMenu(); navigate('/'); };
 

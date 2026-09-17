@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { servicesData, categories, practitioners, timeSlots } from '../data/store';
 import { saveNewBooking } from '../data/bookingStore';
+import bookingService from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 import './BookingModal.css';
+
+const toTimeSpan = (timeSlot) => {
+  const match = timeSlot.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+  if (!match) return '09:00:00';
+  let hour = Number(match[1]);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+  if (period === 'PM' && hour !== 12) hour += 12;
+  if (period === 'AM' && hour === 12) hour = 0;
+  return `${String(hour).padStart(2, '0')}:${minutes}:00`;
+};
 
 const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSuccess }) => {
   const { user } = useAuth();
@@ -20,7 +32,7 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
     email: '',
     phone: '',
     notes: '',
-    paymentMethod: 'salon'
+    paymentMethod: 'cash'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -84,7 +96,7 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleConfirmBooking = (e) => {
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.phone) {
       alert('Please provide your name, email, and phone number.');
@@ -92,7 +104,7 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
       const practitionerName = selectedPractitioner 
         ? selectedPractitioner.name 
         : 'First Available Specialist';
@@ -117,12 +129,35 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
         paymentMethod: formData.paymentMethod
       };
 
-      const result = saveNewBooking(bookingPayload);
+      let result;
+      if (user?.id) {
+        const apiBooking = await bookingService.createBooking({
+          userId: user.id,
+          serviceId: selectedService.id,
+          appointmentDate,
+          startTime: toTimeSpan(selectedTimeSlot),
+          notes: formData.notes,
+          clientPhone: formData.phone,
+          clientEmail: formData.email,
+          assignedStaffMember: selectedPractitioner?.name || null,
+          isHomeService: serviceType === 'VIP Home Service'
+        });
+        result = saveNewBooking({ ...bookingPayload, id: apiBooking.id }, 'Pending');
+      } else {
+        result = saveNewBooking(bookingPayload, 'Pending');
+      }
       setConfirmedBooking(result);
       setIsSubmitting(false);
       setStep(5);
       if (onBookingSuccess) onBookingSuccess(result);
-    }, 600);
+    } catch (error) {
+      setIsSubmitting(false);
+      const responseData = error.response?.data;
+      const validationMessage = responseData?.errors
+        ? Object.values(responseData.errors).flat().join(' ')
+        : '';
+      alert(validationMessage || responseData?.message || 'Unable to create booking. Please try again.');
+    }
   };
 
   const resetAndClose = () => {
@@ -375,16 +410,12 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
                   />
                 </div>
                 <div className="input-field">
-                  <label>Payment Preference</label>
-                  <select
-                    name="paymentMethod"
-                    value={formData.paymentMethod}
-                    onChange={handleInputChange}
-                  >
-                    <option value="salon">💳 Pay at Studio / On Arrival</option>
-                    <option value="card">✨ Credit / Debit Card (Online Pre-pay)</option>
-                    <option value="applepay">🍎 Apple Pay / Google Pay</option>
-                  </select>
+                  <label>Payment Method</label>
+                  <div className="cash-payment-option">
+                    <span aria-hidden="true">💵</span>
+                    <strong>Cash Payment</strong>
+                    <small>Pay at the studio on arrival</small>
+                  </div>
                 </div>
                 <div className="input-field full-width">
                   <label>Special Requests or Skin Allergies (Optional)</label>

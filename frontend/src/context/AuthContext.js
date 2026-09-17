@@ -16,27 +16,38 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    setUser(currentUser);
+    setUser(authService.getCurrentUser());
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     const data = await authService.login(email, password);
-    setUser(data.user);
+    setUser(data.user || null);
+    return data;
+  };
+
+  const adminLogin = async (email, password) => {
+    const data = await authService.adminLogin(email, password);
+    setUser(data.user || null);
     return data;
   };
 
   const register = async (userData) => {
     const data = await authService.register(userData);
-    setUser(data.user);
+    setUser(data.user || null);
     return data;
   };
 
   const adminRegister = async (userData) => {
     const data = await authService.adminRegister(userData);
-    setUser(data.user);
+    setUser(data.user || null);
     return data;
+  };
+
+  const updateProfile = async (profileData) => {
+    const updatedUser = await authService.updateProfile(profileData);
+    setUser(updatedUser);
+    return updatedUser;
   };
 
   const logout = () => {
@@ -47,8 +58,10 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     login,
+    adminLogin,
     register,
     adminRegister,
+    updateProfile,
     logout,
     isAuthenticated: !!user,
     loading,
