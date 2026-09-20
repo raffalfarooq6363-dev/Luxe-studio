@@ -87,31 +87,36 @@ const Home = () => {
       src: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80',
       alt: 'Luxury Suite',
       caption: 'Private Aroma Therapy Suite',
-      className: 'tall'
+      className: 'tall',
+      tag: 'Sanctuary'
     },
     {
       src: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&auto=format&fit=crop&q=80',
       alt: '24K Gold Facial',
       caption: '24K Gold Flake Therapy',
-      className: 'wide'
+      className: 'wide',
+      tag: 'Signature'
     },
     {
       src: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&auto=format&fit=crop&q=80',
       alt: 'Hair Styling',
       caption: 'Haute Balayage Studio',
-      className: ''
+      className: '',
+      tag: 'Couture'
     },
     {
       src: 'https://images.unsplash.com/photo-1512290900672-1f5be6cb75b2?w=800&auto=format&fit=crop&q=80',
       alt: 'Hydra-Dew Extraction',
       caption: 'Deep Dew Extraction & LED',
-      className: ''
+      className: '',
+      tag: 'Skin Science'
     },
     {
       src: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=800&auto=format&fit=crop&q=80',
       alt: 'Bridal Glamour',
       caption: 'Couture Bridal Glam',
-      className: 'wide'
+      className: 'wide',
+      tag: 'Bridal'
     }
   ];
 
@@ -126,18 +131,23 @@ const Home = () => {
       <section className="luxe-hero">
         <div className="container hero-scene">
           <div className="hero-copy">
-            <span className="hero-eyebrow">THE LUXE GLOW EXPERIENCE</span>
+            <div className="hero-live-pill">
+              <span className="live-dot"></span>
+              <span>Sanctuary Open · Bespoke Reservations Available</span>
+            </div>
+            <span className="hero-eyebrow">THE HAUTE AESTHETICS SANCTUARY</span>
             <h1>Where beauty becomes your signature.</h1>
             <p className="hero-description">
-              Bespoke skin, hair, bridal couture, and holistic spa rituals designed to elevate your natural radiance, leaving you polished, peaceful, and completely yourself.
+              Bespoke skin, hair, bridal couture, and holistic spa rituals designed to elevate your natural radiance, leaving you polished, peaceful, and completely radiant.
             </p>
             <div className="hero-highlights" aria-label="Studio highlights">
               <span>Private VIP Suites</span>
-              <span>24K Gold Botanicals</span>
-              <span>Board-Certified Specialists</span>
+              <span>24K Swiss Gold Serums</span>
+              <span>Paris-Trained Artisans</span>
+              <span>100% Organic</span>
             </div>
             <div className="hero-actions">
-              <button type="button" className="btn btn-primary btn-large" onClick={() => openBooking()}>
+              <button type="button" className="btn btn-primary btn-large hero-main-cta" onClick={() => openBooking()}>
                 Reserve Your Ritual
               </button>
               <Link to="/services" className="hero-text-link">Explore Haute Menu <span aria-hidden="true">-&gt;</span></Link>
@@ -149,13 +159,44 @@ const Home = () => {
               alt="Pink luxury beauty treatment"
             />
             <div className="floating-service-chip">
-              <span>✨ 24K Gold Ritual · Paris Award 2025</span>
+              <span className="chip-sparkle">✨</span>
+              <div>
+                <strong>24K Gold Ritual</strong>
+                <span className="chip-sub">Paris Luxury Aesthetic Award 2025</span>
+              </div>
+            </div>
+            <div className="floating-rating-chip">
+              <div className="avatar-group">
+                <span className="mini-av">🌸</span>
+                <span className="mini-av">✨</span>
+                <span className="mini-av">💎</span>
+              </div>
+              <div className="rating-info">
+                <strong>4.98 / 5.0 ★</strong>
+                <span>Over 15,000+ Verified Guests</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. UNIFIED LUXURY RESERVATION & METRICS SUITE */}
+      {/* 2. PRESS & LUXURY TICKER MARQUEE */}
+      <div className="luxury-ticker-wrap">
+        <div className="luxury-ticker-content">
+          <span>✦ VOGUE BEAUTY AWARDS 2025</span>
+          <span>✦ HARPER'S BAZAAR TOP LUXURY SPA</span>
+          <span>✦ 100% DERMATOLOGIST-FORMULATED ORGANICS</span>
+          <span>✦ PARIS CERTIFIED MASTER AESTHETICIANS</span>
+          <span>✦ 24K SWISS GOLD ACTIVE BOTANICALS</span>
+          <span>✦ SOUNDPROOF PRIVATE HEATED SUITES</span>
+          <span>✦ COMPLIMENTARY FRENCH CHAMPAGNE &amp; ELIXIRS</span>
+          <span>✦ VOGUE BEAUTY AWARDS 2025</span>
+          <span>✦ HARPER'S BAZAAR TOP LUXURY SPA</span>
+          <span>✦ 100% DERMATOLOGIST-FORMULATED ORGANICS</span>
+        </div>
+      </div>
+
+      {/* 3. UNIFIED LUXURY RESERVATION & METRICS SUITE */}
       <section className="luxe-reservation-suite-section">
         <div className="container">
           <div className="luxe-reservation-card">
@@ -213,7 +254,48 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 3. THE HAUTE AMBIANCE ("WHY LUXE GLOW") */}
+      {/* 4. THE 4-STEP LUXE SANCTUARY JOURNEY */}
+      <section className="journey-steps-section">
+        <div className="container">
+          <div className="section-header text-center">
+            <span className="section-sub-badge">THE ELEVATED STANDARD</span>
+            <h2 className="section-heading">The Luxe Sanctuary Experience</h2>
+            <p className="section-lead">Every visit is thoughtfully curated from arrival to departure to ensure five-star serenity and unmatched results.</p>
+          </div>
+
+          <div className="journey-steps-grid">
+            <div className="journey-step-card">
+              <div className="step-number">01</div>
+              <div className="step-icon">🔬</div>
+              <h3>3D Diagnostic &amp; Elixir</h3>
+              <p>Arrive to ceremonial matcha or chilled champagne while our specialist conducts a deep 3D skin &amp; hair diagnostic.</p>
+            </div>
+
+            <div className="journey-step-card">
+              <div className="step-number">02</div>
+              <div className="step-icon">🕯️</div>
+              <h3>Private Heated Suite</h3>
+              <p>Step into soundproof sanctuary suites with memory foam heated loungers, custom aromatherapy, and ambient soundscapes.</p>
+            </div>
+
+            <div className="journey-step-card">
+              <div className="step-number">03</div>
+              <div className="step-icon">✨</div>
+              <h3>Master Artisan Ritual</h3>
+              <p>Indulge in meticulous treatment application utilizing 24K active gold, organic Swiss serums, and gentle micro-technology.</p>
+            </div>
+
+            <div className="journey-step-card">
+              <div className="step-number">04</div>
+              <div className="step-icon">🎁</div>
+              <h3>Signature Glow &amp; Gift</h3>
+              <p>Admire your immediate radiant glow in our vanity lounge. Receive bespoke homecare recommendations and aftercare concierge support.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. THE HAUTE AMBIANCE ("WHY LUXE GLOW") */}
       <section className="why-us-section">
         <div className="container">
           <div className="why-us-layout-clean">
@@ -263,7 +345,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 5. TREATMENT CATEGORIES */}
+      {/* 6. TREATMENT CATEGORIES */}
       <section className="categories-section">
         <div className="container">
           <div className="section-header text-center">
@@ -284,7 +366,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 6. INTERACTIVE RITUALS BY CONCERN */}
+      {/* 7. INTERACTIVE RITUALS BY CONCERN */}
       <section className="rituals-concern-section">
         <div className="container">
           <div className="section-header text-center">
@@ -299,35 +381,35 @@ const Home = () => {
               className={`concern-tab-btn ${activeConcern === 'all' ? 'active' : ''}`}
               onClick={() => setActiveConcern('all')}
             >
-              ✨ All Rituals
+              All Rituals
             </button>
             <button
               type="button"
               className={`concern-tab-btn ${activeConcern === 'facial' ? 'active' : ''}`}
               onClick={() => setActiveConcern('facial')}
             >
-              🌸 Skin Glow &amp; Facials
+              Skin Glow &amp; Facials
             </button>
             <button
               type="button"
               className={`concern-tab-btn ${activeConcern === 'hair' ? 'active' : ''}`}
               onClick={() => setActiveConcern('hair')}
             >
-              💇‍♀️ Hair Couture &amp; Spa
+              Hair Couture &amp; Spa
             </button>
             <button
               type="button"
               className={`concern-tab-btn ${activeConcern === 'makeup' ? 'active' : ''}`}
               onClick={() => setActiveConcern('makeup')}
             >
-              💄 Bridal &amp; Glamour
+              Bridal &amp; Glamour
             </button>
             <button
               type="button"
               className={`concern-tab-btn ${activeConcern === 'spa' ? 'active' : ''}`}
               onClick={() => setActiveConcern('spa')}
             >
-              🕯️ Body Spa &amp; Aromatherapy
+              Body Spa &amp; Aromatherapy
             </button>
           </div>
 
@@ -367,7 +449,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 7. MEET OUR MASTER SPECIALISTS */}
+      {/* 8. MEET OUR MASTER SPECIALISTS */}
       <section className="specialists-section">
         <div className="container">
           <div className="section-header text-center">
@@ -402,7 +484,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 8. GLOWING CLIENT TESTIMONIALS */}
+      {/* 9. GLOWING CLIENT TESTIMONIALS */}
       <section className="testimonials-section">
         <div className="container">
           <div className="section-header text-center">
@@ -428,7 +510,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 9. STUDIO AESTHETIC GALLERY */}
+      {/* 10. STUDIO AESTHETIC GALLERY */}
       <section className="studio-gallery-section">
         <div className="container">
           <div className="section-header text-center">
@@ -441,7 +523,8 @@ const Home = () => {
               <div key={index} className={`gallery-item ${item.className}`}>
                 <img src={item.src} alt={item.alt} />
                 <div className="gallery-overlay">
-                  <span>{item.caption}</span>
+                  <span className="gallery-tag-pill">{item.tag}</span>
+                  <span className="gallery-cap">{item.caption}</span>
                 </div>
               </div>
             ))}
@@ -449,7 +532,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 10. FAQ ACCORDION */}
+      {/* 11. FAQ ACCORDION */}
       <section className="faq-section">
         <div className="container">
           <div className="section-header text-center">
@@ -482,33 +565,33 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 11. LUXURY CTA BANNER */}
+      {/* 12. LUXURY CTA BANNER */}
       <section className="luxe-cta-banner">
         <div className="container">
           <div className="cta-banner-content">
-            <span className="cta-badge">EXCLUSIVE FIRST VISIT OFFER</span>
+            <span className="cta-badge">BESPOKE APPOINTMENTS</span>
             <h2>Ready To Experience The Luxe Glow?</h2>
             <p>
-              Book your bespoke ritual today and enjoy complimentary hydration therapy, chilled champagne, and a consultation with our master aestheticians.
+              Book your bespoke ritual today and enjoy complimentary hydration therapy, chilled French champagne, and a private consultation with our master aestheticians.
             </p>
             <div className="cta-buttons">
               <button className="btn btn-white btn-large" onClick={() => openBooking()}>
                 Reserve Your Session Now
               </button>
-              <Link to="/contact" className="btn btn-outline-white btn-large">Contact Studio</Link>
+              <Link to="/contact" className="btn btn-outline-white btn-large">Contact Studio Concierge</Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 12. FLOATING VIP CONCIERGE BOOKING BUTTON */}
+      {/* 13. FLOATING VIP CONCIERGE BOOKING BUTTON */}
       <button
         type="button"
         className="floating-vip-book-btn"
         onClick={() => openBooking()}
         title="Reserve an appointment instantly"
       >
-        <span>✨ Book Appointment</span>
+        <span>✨ Reserve Appointment</span>
       </button>
 
       <BookingModal
@@ -522,3 +605,5 @@ const Home = () => {
 };
 
 export default Home;
+
+
