@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { servicesData, categories, practitioners, timeSlots } from '../data/store';
 import { saveNewBooking } from '../data/bookingStore';
+import { saveStoredNotification } from '../data/notificationStore';
 import bookingService from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 import './BookingModal.css';
@@ -16,7 +17,7 @@ const toTimeSpan = (timeSlot) => {
   return `${String(hour).padStart(2, '0')}:${minutes}:00`;
 };
 
-const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSuccess }) => {
+const BookingModal = ({ isOpen, onClose, initialServiceId = null, initialPractitionerName = null, onBookingSuccess }) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -50,6 +51,10 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
 
   useEffect(() => {
     if (isOpen) {
+      if (initialPractitionerName) {
+        const foundPractitioner = practitioners.find(p => p.name.toLowerCase().includes(initialPractitionerName.toLowerCase()));
+        if (foundPractitioner) setSelectedPractitioner(foundPractitioner);
+      }
       if (initialServiceId) {
         const found = servicesData.find(s => s.id === Number(initialServiceId));
         if (found) {
@@ -67,7 +72,7 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
       }
       setConfirmedBooking(null);
     }
-  }, [isOpen, initialServiceId, selectedService]);
+  }, [isOpen, initialServiceId, initialPractitionerName, selectedService]);
 
   if (!isOpen) return null;
 
@@ -129,23 +134,38 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
         paymentMethod: formData.paymentMethod
       };
 
+      const apiPayload = {
+        userId: user?.id || 0,
+        customerName: formData.name,
+        serviceId: selectedService.id,
+        appointmentDate,
+        startTime: toTimeSpan(selectedTimeSlot),
+        notes: formData.notes,
+        clientPhone: formData.phone,
+        clientEmail: formData.email,
+        assignedStaffMember: selectedPractitioner?.name || null,
+        isHomeService: serviceType === 'VIP Home Service'
+      };
+
       let result;
-      if (user?.id) {
-        const apiBooking = await bookingService.createBooking({
-          userId: user.id,
-          serviceId: selectedService.id,
-          appointmentDate,
-          startTime: toTimeSpan(selectedTimeSlot),
-          notes: formData.notes,
-          clientPhone: formData.phone,
-          clientEmail: formData.email,
-          assignedStaffMember: selectedPractitioner?.name || null,
-          isHomeService: serviceType === 'VIP Home Service'
-        });
+      try {
+        const apiBooking = await bookingService.createBooking(apiPayload);
         result = saveNewBooking({ ...bookingPayload, id: apiBooking.id }, 'Pending');
-      } else {
+      } catch (apiErr) {
+        // If offline or backend error, fallback to local storage
+        console.warn('Backend booking API error, storing locally:', apiErr);
         result = saveNewBooking(bookingPayload, 'Pending');
       }
+
+      saveStoredNotification({
+        userId: user?.id || 0,
+        userEmail: formData.email,
+        title: `Appointment Request Submitted - #${result.id}`,
+        message: `Thank you ${formData.name}! Your appointment request for ${selectedService.name} on ${appointmentDate} at ${selectedTimeSlot} has been received and is pending admin approval.`,
+        type: 'BookingSubmitted',
+        booking: result
+      });
+
       setConfirmedBooking(result);
       setIsSubmitting(false);
       setStep(5);
@@ -437,9 +457,10 @@ const BookingModal = ({ isOpen, onClose, initialServiceId = null, onBookingSucce
               <div className="success-icon-wrapper">
                 <div className="sparkle-circle">✨</div>
               </div>
-              <h3 className="success-heading">Appointment Confirmed!</h3>
+              <h3 className="success-heading">Appointment Request Submitted!</h3>
               <p className="success-sub">
-                Thank you, <strong>{confirmedBooking.customerName}</strong>! Your luxury reservation has been booked.
+                Thank you, <strong>{confirmedBooking.customerName}</strong>! Your booking request has been sent to our studio admin.
+                You will receive an official confirmation email at <strong>{confirmedBooking.customerEmail}</strong> as soon as your slot is approved.
               </p>
 
               <div className="confirmation-ticket">

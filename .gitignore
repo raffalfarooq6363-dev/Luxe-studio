@@ -11,6 +11,7 @@ Backend/**/obj/
 Backend/**/.vs/
 Backend/**/*.user
 Backend/**/*.suo
+Backend/**/appsettings.Local.json
 
 # Environment files
 .env

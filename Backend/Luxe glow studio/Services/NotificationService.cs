@@ -190,24 +190,41 @@ namespace Luxe_glow_studio.Services
                     }
 
                     var delay = scheduledTime - now;
-                    _logger.LogInformation($"Next reminder check scheduled at {scheduledTime}");
+                    _logger.LogInformation("Next reminder check scheduled at {ScheduledTime}", scheduledTime);
 
                     await Task.Delay(delay, stoppingToken);
+
+                    if (stoppingToken.IsCancellationRequested) break;
 
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
                         await notificationService.SendBulkRemindersAsync();
                     }
+
+                    // Wait 1 hour before next evaluation
+                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    // Clean graceful shutdown
+                    break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in Booking Reminder Background Service");
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
                 }
-
-                // Wait 1 hour before checking again
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
+
+            _logger.LogInformation("Booking Reminder Background Service stopped gracefully");
         }
     }
 }

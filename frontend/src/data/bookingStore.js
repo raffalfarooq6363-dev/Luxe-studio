@@ -57,7 +57,8 @@ export const saveNewBooking = (bookingData, status = 'Confirmed') => {
     const referenceId = `LX-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRecord = {
       ...bookingData,
-      id: referenceId,
+      id: bookingData.id !== undefined && bookingData.id !== null ? bookingData.id : referenceId,
+      bookingCode: referenceId,
       status,
       createdAt: new Date().toISOString()
     };
@@ -85,3 +86,36 @@ export const cancelStoredBooking = (bookingId) => {
     throw err;
   }
 };
+
+export const rescheduleStoredBooking = (bookingId, newDate, newTime) => {
+  try {
+    const existing = getStoredBookings();
+    const updated = existing.map(item =>
+      item.id === bookingId
+        ? { ...item, appointmentDate: newDate, timeSlot: newTime, isRescheduled: true }
+        : item
+    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new Event('luxe_bookings_updated'));
+    return updated;
+  } catch (err) {
+    console.error('Error rescheduling stored booking:', err);
+    throw err;
+  }
+};
+
+export const updateStoredBookingStatus = (bookingId, newStatus) => {
+  try {
+    const existing = getStoredBookings();
+    const updated = existing.map(item =>
+      item.id === bookingId ? { ...item, status: newStatus } : item
+    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new Event('luxe_bookings_updated'));
+    return updated;
+  } catch (err) {
+    console.error('Error updating stored booking status:', err);
+    throw err;
+  }
+};
+
