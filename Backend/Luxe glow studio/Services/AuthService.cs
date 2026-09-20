@@ -69,7 +69,9 @@ namespace Luxe_glow_studio.Services
 
         public string GenerateJwtToken(User user)
         {
-            var jwtKey = _configuration["Jwt:Key"] ?? "LuxeGlowStudio_SuperSecret_JwtKey_2026!#$Secure";
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+                throw new InvalidOperationException("Jwt:Key must be configured outside source control.");
             var issuer = _configuration["Jwt:Issuer"] ?? "LuxeGlowStudio";
             var audience = _configuration["Jwt:Audience"] ?? "LuxeGlowStudioUsers";
             var expireDays = int.TryParse(_configuration["Jwt:ExpireDays"], out var days) ? days : 7;
@@ -108,7 +110,9 @@ namespace Luxe_glow_studio.Services
 
         public bool VerifyAdminSecretPasskey(string providedPasskey)
         {
-            var configuredSecret = _configuration["AdminSecurity:SecretPasskey"] ?? "LUXE-ADMIN-SECRET-2026-KEY";
+            var configuredSecret = _configuration["AdminSecurity:SecretPasskey"];
+            if (string.IsNullOrWhiteSpace(configuredSecret))
+                return false;
             return string.Equals(providedPasskey?.Trim(), configuredSecret.Trim(), StringComparison.Ordinal);
         }
     }

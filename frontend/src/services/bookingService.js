@@ -37,6 +37,20 @@ const bookingService = {
     const response = await api.delete(`/booking/${bookingId}`);
     return response.data;
   },
+
+  rescheduleBooking: async (bookingId, { newAppointmentDate, newStartTime, reason }) => {
+    const response = await api.put(`/booking/${bookingId}/reschedule`, {
+      newAppointmentDate,
+      newStartTime,
+      reason: reason || 'Customer requested reschedule'
+    });
+    return response.data;
+  },
+
+  updateStatus: async (bookingId, status, reason = '') => {
+    const response = await api.put(`/booking/${bookingId}/status`, { status, reason });
+    return response.data;
+  },
 };
 
 export default bookingService;

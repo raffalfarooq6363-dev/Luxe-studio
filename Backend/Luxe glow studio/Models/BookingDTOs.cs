@@ -4,8 +4,9 @@ namespace Luxe_glow_studio.Models
 {
     public class CreateBookingDto
     {
-        [Required]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
+
+        public string? CustomerName { get; set; }
 
         [Required]
         public int ServiceId { get; set; }
@@ -35,8 +36,9 @@ namespace Luxe_glow_studio.Models
 
     public class CreateMultiServiceBookingDto
     {
-        [Required]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
+
+        public string? CustomerName { get; set; }
 
         [Required]
         public List<int> ServiceIds { get; set; } = new();
@@ -156,5 +158,17 @@ namespace Luxe_glow_studio.Models
         public DateTime Date { get; set; }
         public int BookingCount { get; set; }
         public decimal Revenue { get; set; }
+    }
+
+    public class EmailSettingsDto
+    {
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; } = 587;
+        public bool EnableSsl { get; set; } = true;
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? From { get; set; }
+        public string? FromName { get; set; } = "Luxe Glow Studio";
+        public string? AdminEmail { get; set; }
     }
 }

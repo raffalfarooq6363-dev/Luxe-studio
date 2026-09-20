@@ -7,6 +7,8 @@ using Luxe_glow_studio.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -32,7 +34,9 @@ builder.Services.AddCors(options =>
 });
 
 // Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "LuxeGlowStudio_SuperSecret_JwtKey_2026!#$Secure";
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("Jwt:Key must be configured outside source control.");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "LuxeGlowStudio";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "LuxeGlowStudioUsers";
 

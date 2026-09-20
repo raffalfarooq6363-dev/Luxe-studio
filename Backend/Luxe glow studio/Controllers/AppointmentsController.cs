@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Luxe_glow_studio.Data;
 using Luxe_glow_studio.Models;
+using Luxe_glow_studio.Services;
 
 namespace Luxe_glow_studio.Controllers
 {
@@ -11,10 +12,12 @@ namespace Luxe_glow_studio.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IBookingService _bookingService;
 
-        public AppointmentsController(AppDbContext context)
+        public AppointmentsController(AppDbContext context, IBookingService bookingService)
         {
             _context = context;
+            _bookingService = bookingService;
         }
 
         // GET: api/appointments
@@ -123,7 +126,24 @@ namespace Luxe_glow_studio.Controllers
             }
 
             appointment.Status = dto.Status.Trim();
+            if (dto.Status.Trim().Equals("Confirmed", StringComparison.OrdinalIgnoreCase))
+            {
+                appointment.ConfirmedAt = DateTime.UtcNow;
+            }
             await _context.SaveChangesAsync();
+
+            var notificationType = dto.Status.Trim().ToLowerInvariant() switch
+            {
+                "confirmed" => NotificationType.BookingConfirmed,
+                "cancelled" or "rejected" => NotificationType.BookingCancelled,
+                "completed" => NotificationType.BookingCompleted,
+                "pending" => NotificationType.BookingConfirmation,
+                _ => (NotificationType?)null
+            };
+            if (notificationType.HasValue)
+            {
+                await _bookingService.SendBookingNotificationAsync(appointment.Id, notificationType.Value);
+            }
 
             return Ok(appointment);
         }
